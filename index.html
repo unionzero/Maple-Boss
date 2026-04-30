@@ -1326,7 +1326,7 @@ loadTheme();
 const SUPABASE_URL = 'https://rrtyyvbrubbvleykeoza.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_bQTF3XTMGuI85LTpSkG2vQ_FRA8HA29';
 
-let supabase = null;
+let sb = null;
 let currentUser = null;
 let syncTimer = null;
 let isSyncing = false;
@@ -1343,7 +1343,7 @@ function initSupabase() {
     console.error('Supabase SDK 로드 실패');
     return false;
   }
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   return true;
 }
 
@@ -1397,7 +1397,7 @@ async function handleAuthSubmit() {
   try {
     let result;
     if (authMode === 'signup') {
-      result = await supabase.auth.signUp({ email, password });
+      result = await sb.auth.signUp({ email, password });
       if (result.error) throw result.error;
       if (!result.data.session) {
         showAuthError('가입 완료! 이메일 인증 후 로그인하세요. (이메일 인증을 끄셨다면 바로 로그인 시도하세요)');
@@ -1405,7 +1405,7 @@ async function handleAuthSubmit() {
         return;
       }
     } else {
-      result = await supabase.auth.signInWithPassword({ email, password });
+      result = await sb.auth.signInWithPassword({ email, password });
       if (result.error) throw result.error;
     }
     // Login successful
@@ -1430,7 +1430,7 @@ async function onUserLogin() {
   setSyncStatus('syncing');
   // 1. Pull cloud data
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('user_data')
       .select('data, updated_at')
       .eq('user_id', currentUser.id)
@@ -1460,8 +1460,8 @@ async function onUserLogin() {
 }
 
 function subscribeRealtime() {
-  if (realtimeChannel) supabase.removeChannel(realtimeChannel);
-  realtimeChannel = supabase
+  if (realtimeChannel) sb.removeChannel(realtimeChannel);
+  realtimeChannel = sb
     .channel('user_data_' + currentUser.id)
     .on('postgres_changes', {
       event: '*',
@@ -1484,11 +1484,11 @@ function subscribeRealtime() {
 }
 
 async function pushToCloud() {
-  if (!currentUser || !supabase) return;
+  if (!currentUser || !sb) return;
   isSyncing = true;
   setSyncStatus('syncing');
   try {
-    const { error } = await supabase
+    const { error } = await sb
       .from('user_data')
       .upsert({
         user_id: currentUser.id,
@@ -1514,8 +1514,8 @@ function schedulePush() {
 
 async function handleLogout() {
   if (!confirm('로그아웃하시겠습니까? 로컬 데이터는 유지됩니다.')) return;
-  if (realtimeChannel) { supabase.removeChannel(realtimeChannel); realtimeChannel = null; }
-  await supabase.auth.signOut();
+  if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel = null; }
+  await sb.auth.signOut();
   currentUser = null;
   document.getElementById('user-info').style.display = 'none';
   showAuthModal();
@@ -1539,7 +1539,7 @@ async function initAuth() {
     return;
   }
   // Check existing session
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await sb.auth.getSession();
   if (session) {
     currentUser = session.user;
     await onUserLogin();
@@ -1547,7 +1547,7 @@ async function initAuth() {
     showAuthModal();
   }
   // Listen for auth state changes
-  supabase.auth.onAuthStateChange((event, session) => {
+  sb.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_OUT') {
       currentUser = null;
       document.getElementById('user-info').style.display = 'none';
