@@ -270,7 +270,7 @@
   </header>
   <div class="toolbar">
     <label for="api-key">넥슨 API 키</label>
-    <input type="password" id="api-key" placeholder="https://openapi.nexon.com 에서 발급 (없어도 사용 가능)">
+    <input type="password" id="api-key" placeholder="본인 API 키 입력 (선택사항 - 비워두면 서버 자동 조회)">
     <button class="btn-ghost" id="btn-save-key">키 저장</button>
     <button class="btn-ghost" id="btn-theme-toggle" title="다크모드 전환">🌙</button>
     <button class="btn-ghost" id="btn-export">백업 ↓</button>
@@ -648,31 +648,60 @@ function updateResetTimer() {
 }
 
 // ============================================================
-// Nexon API
+// Nexon API (Vercel 프록시 경유 - API 키는 서버에서만 사용)
 // ============================================================
+// 프록시 서버 주소. 사용자가 본인 키를 입력했다면 직접 호출, 없으면 프록시 사용.
+const PROXY_BASE = 'YOUR_VERCEL_URL_HERE'; // 예: https://maple-week-api.vercel.app
 const API_BASE = 'https://open.api.nexon.com/maplestory/v1';
-async function fetchOcid(name, key) {
-  const url = `${API_BASE}/id?character_name=${encodeURIComponent(name)}`;
-  const r = await fetch(url, { headers: { 'x-nxopen-api-key': key } });
-  if (!r.ok) {
-    const err = await r.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `OCID 조회 실패 (${r.status})`);
-  }
-  return (await r.json()).ocid;
-}
-async function fetchBasic(ocid, key) {
-  const url = `${API_BASE}/character/basic?ocid=${ocid}`;
-  const r = await fetch(url, { headers: { 'x-nxopen-api-key': key } });
-  if (!r.ok) throw new Error('캐릭터 정보 조회 실패');
-  return await r.json();
-}
+
 async function lookupCharacter(name) {
   const key = getApiKey();
-  if (!key) throw new Error('API 키가 없습니다');
-  const ocid = await fetchOcid(name, key);
-  const basic = await fetchBasic(ocid, key);
+  // 본인 키가 있으면 그걸 우선 사용 (직접 호출)
+  if (key) {
+    return await lookupViaUserKey(name, key);
+  }
+  // 본인 키 없으면 프록시 서버 사용
+  if (PROXY_BASE && PROXY_BASE.startsWith('http')) {
+    return await lookupViaProxy(name);
+  }
+  throw new Error('API 키가 없고 프록시 서버도 설정되지 않았습니다');
+}
+
+async function lookupViaProxy(name) {
+  const url = `${PROXY_BASE}/api/character?name=${encodeURIComponent(name)}`;
+  const r = await fetch(url);
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    throw new Error(err?.error || `캐릭터 조회 실패 (${r.status})`);
+  }
+  const data = await r.json();
   return {
-    ocid, name: basic.character_name || name,
+    ocid: data.ocid,
+    name: data.name || name,
+    level: data.level || 0,
+    job: data.job || '',
+    world: data.world || '',
+    image: data.image || '',
+  };
+}
+
+async function lookupViaUserKey(name, key) {
+  const idUrl = `${API_BASE}/id?character_name=${encodeURIComponent(name)}`;
+  const idRes = await fetch(idUrl, { headers: { 'x-nxopen-api-key': key } });
+  if (!idRes.ok) {
+    const err = await idRes.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `OCID 조회 실패 (${idRes.status})`);
+  }
+  const ocid = (await idRes.json()).ocid;
+  if (!ocid) throw new Error('캐릭터를 찾을 수 없습니다');
+
+  const basicUrl = `${API_BASE}/character/basic?ocid=${ocid}`;
+  const basicRes = await fetch(basicUrl, { headers: { 'x-nxopen-api-key': key } });
+  if (!basicRes.ok) throw new Error('캐릭터 정보 조회 실패');
+  const basic = await basicRes.json();
+  return {
+    ocid,
+    name: basic.character_name || name,
     level: basic.character_level || 0,
     job: basic.character_class || '',
     world: basic.world_name || '',
