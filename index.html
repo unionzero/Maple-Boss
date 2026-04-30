@@ -314,8 +314,8 @@
   <div class="auth-modal">
     <h2 id="auth-title">🍁 로그인</h2>
     <div class="auth-sub" id="auth-sub">메이플 주간보스 트래커</div>
-    <label for="auth-email">이메일</label>
-    <input type="email" id="auth-email" placeholder="example@email.com" autocomplete="email">
+    <label for="auth-email">아이디</label>
+    <input type="text" id="auth-email" placeholder="영문/숫자 4자 이상" autocomplete="username" spellcheck="false">
     <label for="auth-password">비밀번호</label>
     <input type="password" id="auth-password" placeholder="6자 이상" autocomplete="current-password">
     <div class="auth-error" id="auth-error"></div>
@@ -1415,11 +1415,24 @@ function showAuthError(msg) {
   el.classList.add('show');
 }
 
+// 아이디를 Supabase가 받아들이는 가짜 이메일로 변환
+// 예: 'unionzero' -> 'unionzero@maple.local'
+function usernameToEmail(username) {
+  return username.toLowerCase() + '@maple.local';
+}
+function emailToUsername(email) {
+  if (!email) return '';
+  const at = email.indexOf('@');
+  return at > 0 ? email.slice(0, at) : email;
+}
+
 async function handleAuthSubmit() {
-  const email = document.getElementById('auth-email').value.trim();
+  const username = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-password').value;
-  if (!email || !password) { showAuthError('이메일과 비밀번호를 입력하세요.'); return; }
+  if (!username || !password) { showAuthError('아이디와 비밀번호를 입력하세요.'); return; }
+  if (!/^[a-zA-Z0-9_]{4,20}$/.test(username)) { showAuthError('아이디는 영문/숫자/_ 4~20자여야 합니다.'); return; }
   if (password.length < 6) { showAuthError('비밀번호는 6자 이상이어야 합니다.'); return; }
+  const email = usernameToEmail(username);
   const btn = document.getElementById('btn-auth-submit');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>처리 중';
@@ -1429,7 +1442,7 @@ async function handleAuthSubmit() {
       result = await sb.auth.signUp({ email, password });
       if (result.error) throw result.error;
       if (!result.data.session) {
-        showAuthError('가입 완료! 이메일 인증 후 로그인하세요. (이메일 인증을 끄셨다면 바로 로그인 시도하세요)');
+        showAuthError('가입 완료! 바로 로그인 시도하세요.');
         setAuthMode('login');
         return;
       }
@@ -1443,9 +1456,9 @@ async function handleAuthSubmit() {
     await onUserLogin();
   } catch (e) {
     let msg = e.message || '오류가 발생했습니다';
-    if (msg.includes('Invalid login')) msg = '이메일 또는 비밀번호가 올바르지 않습니다';
-    if (msg.includes('already registered')) msg = '이미 가입된 이메일입니다';
-    if (msg.includes('Email not confirmed')) msg = '이메일 인증이 필요합니다 (또는 Supabase에서 Confirm email 끄기)';
+    if (msg.includes('Invalid login')) msg = '아이디 또는 비밀번호가 올바르지 않습니다';
+    if (msg.includes('already registered')) msg = '이미 가입된 아이디입니다';
+    if (msg.includes('Email not confirmed')) msg = '이메일 인증이 필요합니다 (Supabase에서 Confirm email 끄기)';
     showAuthError(msg);
   } finally {
     btn.disabled = false;
@@ -1455,7 +1468,7 @@ async function handleAuthSubmit() {
 
 async function onUserLogin() {
   document.getElementById('user-info').style.display = 'flex';
-  document.getElementById('user-email').textContent = currentUser.email;
+  document.getElementById('user-email').textContent = emailToUsername(currentUser.email);
   setSyncStatus('syncing');
   // 1. Pull cloud data
   try {
