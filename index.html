@@ -111,10 +111,10 @@
   .stat-value { font-family: 'Jua', sans-serif; font-size: 22px; color: var(--gold-2); }
   .stat-value.small { font-size: 17px; }
   .stat-sub { font-size: 10px; color: var(--ink-2); margin-top: 2px; }
-  .stat-meso-combined { font-family: 'Jua', sans-serif; font-size: 17px; line-height: 1.1; display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap; }
-  .stat-meso-done { color: var(--gold-2); }
-  .stat-meso-sep { color: var(--ink-3); font-size: 14px; }
-  .stat-meso-total { color: var(--ink-2); font-size: 14px; }
+  .stat-meso-combined { font-family: 'Jua', sans-serif; line-height: 1.1; display: flex; align-items: baseline; gap: 5px; flex-wrap: wrap; }
+  .stat-meso-done { color: var(--gold-2); font-size: 22px; }
+  .stat-meso-sep { color: var(--ink-3); font-size: 15px; }
+  .stat-meso-total { color: var(--ink-2); font-size: 14px; font-weight: 400; }
   .stat-sub #stat-meso-left { color: var(--ink); font-weight: 700; }
   .add-char { background: var(--bg-card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; box-shadow: var(--shadow); }
   .add-char-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
@@ -846,10 +846,10 @@ function render() {
           </div>
         </div>
         <div class="char-actions">
+          <button class="btn-ghost btn-char-clear" data-action="clear-all" data-idx="${realIdx}" title="이 캐릭터의 모든 보스/주간 클리어">✓ 모두 클리어</button>
+          <button class="btn-ghost btn-char-reset" data-action="reset" data-idx="${realIdx}" title="이 캐릭터의 클리어 초기화">↻ 초기화</button>
           <button class="btn-ghost" data-action="refresh" data-idx="${realIdx}" title="API로 갱신">↻</button>
           <button class="btn-ghost" data-action="edit-bosses" data-idx="${realIdx}">설정</button>
-          <button class="btn-ghost btn-char-clear" data-action="clear-all" data-idx="${realIdx}" title="이 캐릭터의 모든 보스/주간 클리어">✓ 모두</button>
-          <button class="btn-ghost btn-char-reset" data-action="reset" data-idx="${realIdx}" title="이 캐릭터의 클리어 초기화">↻ 초기화</button>
           <button class="btn-ghost" data-action="move-up" data-idx="${realIdx}">↑</button>
           <button class="btn-ghost" data-action="move-down" data-idx="${realIdx}">↓</button>
           <button class="btn-danger" data-action="delete" data-idx="${realIdx}">삭제</button>
