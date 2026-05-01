@@ -105,30 +105,29 @@
   .btn-ghost:hover { background: var(--bg-2); color: var(--ink); }
   .btn-danger { background: var(--rose-soft); color: var(--rose); border: 1px solid var(--rose); }
   .btn-danger:hover { background: var(--rose); color: white; }
-  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 22px; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
   .stat { background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow); }
   .stat-label { font-size: 10px; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
   .stat-value { font-family: 'Jua', sans-serif; font-size: 22px; color: var(--gold-2); }
   .stat-value.small { font-size: 17px; }
   .stat-sub { font-size: 10px; color: var(--ink-2); margin-top: 2px; }
+  .stat-meso-combined { font-family: 'Jua', sans-serif; font-size: 17px; line-height: 1.1; display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap; }
+  .stat-meso-done { color: var(--gold-2); }
+  .stat-meso-sep { color: var(--ink-3); font-size: 14px; }
+  .stat-meso-total { color: var(--ink-2); font-size: 14px; }
+  .stat-sub #stat-meso-left { color: var(--ink); font-weight: 700; }
   .add-char { background: var(--bg-card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; box-shadow: var(--shadow); }
   .add-char-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .add-char-row input { flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: 14px; }
   .add-char-row input:focus { outline: none; border-color: var(--gold); }
-  .page-tabs-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
-  .page-tabs { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; min-width: 0; }
+  .page-tabs { display: flex; gap: 4px; margin-bottom: 14px; flex-wrap: wrap; }
   .page-tab { padding: 6px 14px; background: transparent; border: 1.5px solid var(--line); border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--ink-2); cursor: pointer; transition: all 0.15s; }
   .page-tab:hover { border-color: var(--gold); color: var(--gold-2); }
   .page-tab.active { background: var(--gold); border-color: var(--gold); color: white; }
   .page-tab .count { margin-left: 5px; opacity: 0.7; font-weight: 500; }
-  .bulk-actions { display: flex; gap: 6px; flex-shrink: 0; }
-  .btn-bulk { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border: 1.5px solid var(--line); border-radius: 999px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s; background: transparent; font-family: inherit; }
-  .btn-bulk .icon { font-size: 13px; line-height: 1; }
-  .btn-bulk-clear { color: var(--leaf); border-color: var(--leaf); }
-  .btn-bulk-clear:hover { background: var(--leaf); color: white; }
-  .btn-bulk-reset { color: var(--ink-2); }
-  .btn-bulk-reset:hover { background: var(--bg-2); color: var(--ink); }
-  [data-theme="dark"] .btn-bulk-reset:hover { background: var(--bg); }
+  .btn-char-clear { color: var(--leaf) !important; border-color: var(--leaf) !important; }
+  .btn-char-clear:hover { background: var(--leaf) !important; color: white !important; }
+  .btn-char-reset { color: var(--ink-2) !important; }
   .empty-state { text-align: center; padding: 50px 20px; color: var(--ink-3); }
   .empty-state .icon { font-size: 42px; margin-bottom: 10px; opacity: 0.4; }
   .char-card { background: var(--bg-card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; box-shadow: var(--shadow); transition: box-shadow 0.2s; }
@@ -292,8 +291,15 @@
   <div class="stats">
     <div class="stat"><div class="stat-label">캐릭터</div><div class="stat-value" id="stat-chars">0</div><div class="stat-sub">등록됨</div></div>
     <div class="stat"><div class="stat-label">이번 주 진행</div><div class="stat-value" id="stat-progress">0 / 0</div><div class="stat-sub" id="stat-progress-pct">0%</div></div>
-    <div class="stat"><div class="stat-label">획득 메소</div><div class="stat-value small" id="stat-meso">0</div><div class="stat-sub">파티 분배 반영</div></div>
-    <div class="stat"><div class="stat-label">남은 메소</div><div class="stat-value small" id="stat-meso-left">0</div><div class="stat-sub">잠재 수익</div></div>
+    <div class="stat">
+      <div class="stat-label">메소</div>
+      <div class="stat-meso-combined">
+        <span class="stat-meso-done" id="stat-meso">0</span>
+        <span class="stat-meso-sep">/</span>
+        <span class="stat-meso-total" id="stat-meso-total">0</span>
+      </div>
+      <div class="stat-sub">남은 메소: <span id="stat-meso-left">0</span></div>
+    </div>
     <div class="stat"><div class="stat-label">주간 컨텐츠</div><div class="stat-value small" id="stat-extras">0 / 0</div><div class="stat-sub">수로/플래그/노블</div></div>
   </div>
   <div class="add-char">
@@ -302,13 +308,7 @@
       <button class="btn-primary" id="btn-add-char">+ 캐릭터 추가</button>
     </div>
   </div>
-  <div class="page-tabs-row">
-    <div class="page-tabs" id="page-tabs"></div>
-    <div class="bulk-actions" id="bulk-actions" style="display:none;">
-      <button class="btn-bulk btn-bulk-clear" id="btn-bulk-clear-all"><span class="icon">✓</span>모두 클리어</button>
-      <button class="btn-bulk btn-bulk-reset" id="btn-bulk-reset"><span class="icon">↻</span>초기화</button>
-    </div>
-  </div>
+  <div class="page-tabs" id="page-tabs"></div>
   <div id="char-list">
     <div class="empty-state" id="empty-state">
       <div class="icon">🍂</div>
@@ -781,11 +781,9 @@ function render() {
   document.getElementById('stat-progress').textContent = `${doneBosses} / ${totalBosses}`;
   document.getElementById('stat-progress-pct').textContent = totalBosses ? Math.round(doneBosses / totalBosses * 100) + '%' : '0%';
   document.getElementById('stat-meso').textContent = fmtMeso(doneMeso);
+  document.getElementById('stat-meso-total').textContent = fmtMeso(totalMeso);
   document.getElementById('stat-meso-left').textContent = fmtMeso(totalMeso - doneMeso);
   document.getElementById('stat-extras').textContent = `${doneExtras} / ${totalExtras}`;
-
-  // 캐릭터가 있고 현재 페이지에도 캐릭터가 있을 때만 모두 클리어/초기화 버튼 노출
-  document.getElementById('bulk-actions').style.display = visibleCount > 0 ? 'flex' : 'none';
 
   const pages = getAllPages();
   const tabs = document.getElementById('page-tabs');
@@ -850,6 +848,8 @@ function render() {
         <div class="char-actions">
           <button class="btn-ghost" data-action="refresh" data-idx="${realIdx}" title="API로 갱신">↻</button>
           <button class="btn-ghost" data-action="edit-bosses" data-idx="${realIdx}">설정</button>
+          <button class="btn-ghost btn-char-clear" data-action="clear-all" data-idx="${realIdx}" title="이 캐릭터의 모든 보스/주간 클리어">✓ 모두</button>
+          <button class="btn-ghost btn-char-reset" data-action="reset" data-idx="${realIdx}" title="이 캐릭터의 클리어 초기화">↻ 초기화</button>
           <button class="btn-ghost" data-action="move-up" data-idx="${realIdx}">↑</button>
           <button class="btn-ghost" data-action="move-down" data-idx="${realIdx}">↓</button>
           <button class="btn-danger" data-action="delete" data-idx="${realIdx}">삭제</button>
@@ -1282,6 +1282,8 @@ document.getElementById('char-list').addEventListener('click', e => {
   switch(a) {
     case 'refresh': refreshCharacter(idx); break;
     case 'edit-bosses': openBossModal(idx); break;
+    case 'clear-all': charClearAll(idx); break;
+    case 'reset': charReset(idx); break;
     case 'delete': deleteCharacter(idx); break;
     case 'move-up': moveCharacter(idx, -1); break;
     case 'move-down': moveCharacter(idx, 1); break;
@@ -1300,39 +1302,25 @@ document.getElementById('btn-save-key').addEventListener('click', () => {
 });
 document.getElementById('btn-modal-cancel').addEventListener('click', closeModal);
 
-// 모두 클리어 / 초기화 (현재 페이지 한정)
-function getVisibleCharIndices() {
-  return state.characters
-    .map((c, i) => ({ c, i }))
-    .filter(({ c }) => state.activePage === 'all' || (c.page || 1) === state.activePage)
-    .map(({ i }) => i);
+// 캐릭터별 모두 클리어 / 초기화
+function charClearAll(idx) {
+  const ch = state.characters[idx];
+  if (!ch) return;
+  if (!confirm(`'${ch.name}'의 모든 보스/주간 컨텐츠를 클리어 표시할까요?`)) return;
+  Object.values(ch.bosses || {}).forEach(info => { info.clear = true; });
+  ch.suro = true; ch.flag = true; ch.noblesse = true;
+  saveState(); render();
+  toast(`'${ch.name}' 모두 클리어 처리`);
 }
-document.getElementById('btn-bulk-clear-all').addEventListener('click', () => {
-  const indices = getVisibleCharIndices();
-  if (indices.length === 0) return;
-  const pageLabel = state.activePage === 'all' ? '전체' : `페이지 ${state.activePage}`;
-  if (!confirm(`${pageLabel}의 모든 보스/주간 컨텐츠를 클리어 표시할까요?`)) return;
-  indices.forEach(i => {
-    const ch = state.characters[i];
-    Object.values(ch.bosses || {}).forEach(info => { info.clear = true; });
-    ch.suro = true; ch.flag = true; ch.noblesse = true;
-  });
+function charReset(idx) {
+  const ch = state.characters[idx];
+  if (!ch) return;
+  if (!confirm(`'${ch.name}'의 클리어 표시를 모두 초기화할까요?`)) return;
+  Object.values(ch.bosses || {}).forEach(info => { info.clear = false; });
+  ch.suro = false; ch.flag = false; ch.noblesse = false;
   saveState(); render();
-  toast('모두 클리어 처리했습니다');
-});
-document.getElementById('btn-bulk-reset').addEventListener('click', () => {
-  const indices = getVisibleCharIndices();
-  if (indices.length === 0) return;
-  const pageLabel = state.activePage === 'all' ? '전체' : `페이지 ${state.activePage}`;
-  if (!confirm(`${pageLabel}의 모든 클리어 표시를 초기화할까요?`)) return;
-  indices.forEach(i => {
-    const ch = state.characters[i];
-    Object.values(ch.bosses || {}).forEach(info => { info.clear = false; });
-    ch.suro = false; ch.flag = false; ch.noblesse = false;
-  });
-  saveState(); render();
-  toast('초기화했습니다');
-});
+  toast(`'${ch.name}' 초기화 완료`);
+}
 document.getElementById('btn-modal-save').addEventListener('click', () => {
   if (modalCharIdx < 0) return;
   const ch = state.characters[modalCharIdx];
