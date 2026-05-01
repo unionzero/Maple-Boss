@@ -72,7 +72,7 @@
   [data-theme="dark"] .modal-body { background: #0f0d0a; }
   [data-theme="dark"] .selected-mini { background: var(--bg); }
   [data-theme="dark"] .party-popup { background: var(--bg-card); }
-  [data-theme="dark"] .party-popup button { background: var(--bg); color: var(--ink); }
+  [data-theme="dark"] .party-popup-label { color: var(--ink); }
   [data-theme="dark"] .toast { background: var(--bg-card); border: 1px solid var(--line); }
   [data-theme="dark"] .reset-info { background: var(--bg-card); }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -115,11 +115,20 @@
   .add-char-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .add-char-row input { flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: 14px; }
   .add-char-row input:focus { outline: none; border-color: var(--gold); }
-  .page-tabs { display: flex; gap: 4px; margin-bottom: 14px; flex-wrap: wrap; }
+  .page-tabs-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .page-tabs { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; min-width: 0; }
   .page-tab { padding: 6px 14px; background: transparent; border: 1.5px solid var(--line); border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--ink-2); cursor: pointer; transition: all 0.15s; }
   .page-tab:hover { border-color: var(--gold); color: var(--gold-2); }
   .page-tab.active { background: var(--gold); border-color: var(--gold); color: white; }
   .page-tab .count { margin-left: 5px; opacity: 0.7; font-weight: 500; }
+  .bulk-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .btn-bulk { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border: 1.5px solid var(--line); border-radius: 999px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s; background: transparent; font-family: inherit; }
+  .btn-bulk .icon { font-size: 13px; line-height: 1; }
+  .btn-bulk-clear { color: var(--leaf); border-color: var(--leaf); }
+  .btn-bulk-clear:hover { background: var(--leaf); color: white; }
+  .btn-bulk-reset { color: var(--ink-2); }
+  .btn-bulk-reset:hover { background: var(--bg-2); color: var(--ink); }
+  [data-theme="dark"] .btn-bulk-reset:hover { background: var(--bg); }
   .empty-state { text-align: center; padding: 50px 20px; color: var(--ink-3); }
   .empty-state .icon { font-size: 42px; margin-bottom: 10px; opacity: 0.4; }
   .char-card { background: var(--bg-card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; box-shadow: var(--shadow); transition: box-shadow 0.2s; }
@@ -217,11 +226,12 @@
   .page-btn { padding: 4px 10px; border: 1px solid var(--line); border-radius: 6px; background: white; font-size: 11px; font-weight: 700; color: var(--ink-2); cursor: pointer; }
   .page-btn.active { background: var(--gold); color: white; border-color: var(--gold); }
   .modal-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line); }
-  .party-popup { position: fixed; background: white; border: 1px solid var(--line); border-radius: 8px; padding: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); display: none; gap: 4px; z-index: 250; }
+  .party-popup { position: fixed; background: white; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); display: none; flex-direction: column; gap: 8px; z-index: 250; min-width: 220px; }
   .party-popup.show { display: flex; }
-  .party-popup button { padding: 4px 8px; font-size: 11px; background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 5px; }
-  .party-popup button:hover { background: var(--gold); color: white; border-color: var(--gold); }
-  .party-popup button.current { background: var(--gold); color: white; border-color: var(--gold); }
+  .party-popup-label { font-family: 'Jua', sans-serif; font-size: 13px; color: var(--ink); }
+  .party-popup-label #party-popup-value { color: var(--gold-2); font-weight: 700; margin-left: 4px; }
+  .party-popup-slider, .party-popup input[type="range"] { width: 100%; accent-color: var(--gold); cursor: pointer; }
+  .party-popup-ticks { display: flex; justify-content: space-between; font-size: 10px; color: var(--ink-2); padding: 0 2px; }
   .char-memo { margin-top: 6px; padding: 6px 10px; background: var(--bg-2); border-radius: 7px; font-size: 12px; color: var(--ink-2); line-height: 1.4; white-space: pre-wrap; word-break: break-all; }
   footer { text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px dashed var(--line); font-size: 11px; color: var(--ink-3); line-height: 1.7; }
   .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ink); color: white; padding: 11px 20px; border-radius: 999px; font-size: 13px; font-weight: 500; opacity: 0; transition: all 0.25s; z-index: 200; pointer-events: none; max-width: 90%; text-align: center; }
@@ -273,16 +283,11 @@
     <input type="password" id="api-key" placeholder="본인 API 키 입력 (선택사항 - 비워두면 서버 자동 조회)">
     <button class="btn-ghost" id="btn-save-key">키 저장</button>
     <button class="btn-ghost" id="btn-theme-toggle" title="다크모드 전환">🌙</button>
-    <button class="btn-ghost" id="btn-export">백업 ↓</button>
-    <button class="btn-ghost" id="btn-import">불러오기 ↑</button>
-    <button class="btn-ghost" id="btn-import-mw">Maple Week JSON ↑</button>
     <div class="user-info" id="user-info" style="display:none;">
       <span class="email" id="user-email">-</span>
       <span class="sync-indicator" id="sync-indicator">동기화됨</span>
       <button class="btn-ghost" id="btn-logout" style="padding:3px 8px;font-size:11px;">로그아웃</button>
     </div>
-    <input type="file" id="file-import" accept="application/json" style="display:none">
-    <input type="file" id="file-import-mw" accept="application/json" style="display:none">
   </div>
   <div class="stats">
     <div class="stat"><div class="stat-label">캐릭터</div><div class="stat-value" id="stat-chars">0</div><div class="stat-sub">등록됨</div></div>
@@ -297,7 +302,13 @@
       <button class="btn-primary" id="btn-add-char">+ 캐릭터 추가</button>
     </div>
   </div>
-  <div class="page-tabs" id="page-tabs"></div>
+  <div class="page-tabs-row">
+    <div class="page-tabs" id="page-tabs"></div>
+    <div class="bulk-actions" id="bulk-actions" style="display:none;">
+      <button class="btn-bulk btn-bulk-clear" id="btn-bulk-clear-all"><span class="icon">✓</span>모두 클리어</button>
+      <button class="btn-bulk btn-bulk-reset" id="btn-bulk-reset"><span class="icon">↻</span>초기화</button>
+    </div>
+  </div>
   <div id="char-list">
     <div class="empty-state" id="empty-state">
       <div class="icon">🍂</div>
@@ -368,12 +379,9 @@
   </div>
 </div>
 <div class="party-popup" id="party-popup">
-  <button data-party="1">솔플</button>
-  <button data-party="2">2인</button>
-  <button data-party="3">3인</button>
-  <button data-party="4">4인</button>
-  <button data-party="5">5인</button>
-  <button data-party="6">6인</button>
+  <div class="party-popup-label">파티 인원: <span id="party-popup-value">1인</span></div>
+  <input type="range" id="party-popup-slider" min="1" max="6" value="1" step="1">
+  <div class="party-popup-ticks"><span>솔플</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span></div>
 </div>
 <div class="toast" id="toast"></div>
 <script>
@@ -745,11 +753,16 @@ function getAllPages() {
 // ============================================================
 function render() {
   const totalChars = state.characters.length;
+  // 페이지 필터에 맞는 캐릭터만 통계에 반영
+  const visibleChars = state.activePage === 'all'
+    ? state.characters
+    : state.characters.filter(c => (c.page || 1) === state.activePage);
+  const visibleCount = visibleChars.length;
   let totalBosses = 0, doneBosses = 0;
   let totalMeso = 0, doneMeso = 0;
-  let totalExtras = totalChars * 3, doneExtras = 0;
+  let totalExtras = visibleCount * 3, doneExtras = 0;
 
-  state.characters.forEach(ch => {
+  visibleChars.forEach(ch => {
     Object.entries(ch.bosses || {}).forEach(([bid, info]) => {
       const boss = getBoss(bid);
       if (!boss) return;
@@ -764,12 +777,15 @@ function render() {
     if (ch.noblesse) doneExtras++;
   });
 
-  document.getElementById('stat-chars').textContent = totalChars;
+  document.getElementById('stat-chars').textContent = visibleCount;
   document.getElementById('stat-progress').textContent = `${doneBosses} / ${totalBosses}`;
   document.getElementById('stat-progress-pct').textContent = totalBosses ? Math.round(doneBosses / totalBosses * 100) + '%' : '0%';
   document.getElementById('stat-meso').textContent = fmtMeso(doneMeso);
   document.getElementById('stat-meso-left').textContent = fmtMeso(totalMeso - doneMeso);
   document.getElementById('stat-extras').textContent = `${doneExtras} / ${totalExtras}`;
+
+  // 캐릭터가 있고 현재 페이지에도 캐릭터가 있을 때만 모두 클리어/초기화 버튼 노출
+  document.getElementById('bulk-actions').style.display = visibleCount > 0 ? 'flex' : 'none';
 
   const pages = getAllPages();
   const tabs = document.getElementById('page-tabs');
@@ -1048,26 +1064,62 @@ function updateModalSelectedBar() {
 function showPartyPopup(e, bossId) {
   const popup = document.getElementById('party-popup');
   popup.classList.add('show');
-  popup.style.left = e.clientX + 'px';
-  popup.style.top = e.clientY + 'px';
+  // 화면 밖으로 안 나가도록 위치 보정
+  const popupWidth = 240;
+  let left = e.clientX;
+  let top = e.clientY + 8;
+  if (left + popupWidth > window.innerWidth) left = window.innerWidth - popupWidth - 8;
+  if (top + 100 > window.innerHeight) top = e.clientY - 100;
+  popup.style.left = left + 'px';
+  popup.style.top = top + 'px';
+  popup.dataset.context = 'modal';
   popup.dataset.bossId = bossId;
+  popup.dataset.charIdx = '';
   const cur = modalSelections[bossId]?.party || 1;
-  Array.from(popup.querySelectorAll('button')).forEach(btn => {
-    btn.classList.toggle('current', parseInt(btn.dataset.party) === cur);
-  });
+  const slider = document.getElementById('party-popup-slider');
+  slider.value = cur;
+  document.getElementById('party-popup-value').textContent = cur === 1 ? '솔플' : cur + '인';
 }
 
-document.getElementById('party-popup').addEventListener('click', (e) => {
-  const btn = e.target.closest('button');
-  if (!btn) return;
+function showCharPartyPopup(e, charIdx, bossId) {
   const popup = document.getElementById('party-popup');
+  popup.classList.add('show');
+  const popupWidth = 240;
+  let left = e.clientX;
+  let top = e.clientY + 8;
+  if (left + popupWidth > window.innerWidth) left = window.innerWidth - popupWidth - 8;
+  if (top + 100 > window.innerHeight) top = e.clientY - 100;
+  popup.style.left = left + 'px';
+  popup.style.top = top + 'px';
+  popup.dataset.context = 'char';
+  popup.dataset.bossId = bossId;
+  popup.dataset.charIdx = String(charIdx);
+  const ch = state.characters[charIdx];
+  const cur = (ch && ch.bosses[bossId] && ch.bosses[bossId].party) || 1;
+  const slider = document.getElementById('party-popup-slider');
+  slider.value = cur;
+  document.getElementById('party-popup-value').textContent = cur === 1 ? '솔플' : cur + '인';
+}
+
+document.getElementById('party-popup-slider').addEventListener('input', (e) => {
+  const popup = document.getElementById('party-popup');
+  const party = parseInt(e.target.value);
+  document.getElementById('party-popup-value').textContent = party === 1 ? '솔플' : party + '인';
+  const ctx = popup.dataset.context;
   const bid = popup.dataset.bossId;
-  const party = parseInt(btn.dataset.party);
-  if (modalSelections[bid]) {
-    modalSelections[bid].party = party;
-    updateModalSelectedBar();
+  if (ctx === 'modal') {
+    if (modalSelections[bid]) {
+      modalSelections[bid].party = party;
+      updateModalSelectedBar();
+    }
+  } else if (ctx === 'char') {
+    const charIdx = parseInt(popup.dataset.charIdx);
+    const ch = state.characters[charIdx];
+    if (ch && ch.bosses[bid]) {
+      ch.bosses[bid].party = party;
+      saveState(); render();
+    }
   }
-  popup.classList.remove('show');
 });
 document.addEventListener('click', (e) => {
   const popup = document.getElementById('party-popup');
@@ -1220,44 +1272,12 @@ function importMapleWeek(jsonData) {
   toast(`${added}개 캐릭터를 가져왔습니다${skipped > 0 ? ` (${skipped}개는 이미 존재)` : ''}`);
 }
 
-document.getElementById('file-import').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const data = JSON.parse(ev.target.result);
-      if (!data.characters) throw new Error('형식 오류');
-      if (!confirm('현재 데이터를 덮어씁니다. 계속할까요?')) return;
-      state = { ...state, ...data };
-      saveState(); render();
-      toast('데이터를 불러왔습니다');
-    } catch(err) { toast('파일 형식이 올바르지 않습니다'); }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-});
-
-document.getElementById('file-import-mw').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const data = JSON.parse(ev.target.result);
-      importMapleWeek(data);
-    } catch(err) { toast('파일을 읽을 수 없습니다'); }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-});
-
 document.getElementById('char-list').addEventListener('click', e => {
   const action = e.target.closest('[data-action]');
   if (!action) return;
   const idx = parseInt(action.dataset.idx);
   const a = action.dataset.action;
-  if (a === 'cycle-party') { e.stopPropagation(); cycleParty(idx, action.dataset.boss); return; }
+  if (a === 'cycle-party') { e.stopPropagation(); showCharPartyPopup(e, idx, action.dataset.boss); return; }
   if (a === 'toggle-extra') { e.stopPropagation(); toggleExtra(idx, action.dataset.extra); return; }
   switch(a) {
     case 'refresh': refreshCharacter(idx); break;
@@ -1278,10 +1298,41 @@ document.getElementById('btn-save-key').addEventListener('click', () => {
   if (k) { localStorage.setItem(KEY_STORAGE, k); toast('API 키를 저장했습니다'); }
   else { localStorage.removeItem(KEY_STORAGE); toast('API 키를 삭제했습니다'); }
 });
-document.getElementById('btn-export').addEventListener('click', exportData);
-document.getElementById('btn-import').addEventListener('click', () => document.getElementById('file-import').click());
-document.getElementById('btn-import-mw').addEventListener('click', () => document.getElementById('file-import-mw').click());
 document.getElementById('btn-modal-cancel').addEventListener('click', closeModal);
+
+// 모두 클리어 / 초기화 (현재 페이지 한정)
+function getVisibleCharIndices() {
+  return state.characters
+    .map((c, i) => ({ c, i }))
+    .filter(({ c }) => state.activePage === 'all' || (c.page || 1) === state.activePage)
+    .map(({ i }) => i);
+}
+document.getElementById('btn-bulk-clear-all').addEventListener('click', () => {
+  const indices = getVisibleCharIndices();
+  if (indices.length === 0) return;
+  const pageLabel = state.activePage === 'all' ? '전체' : `페이지 ${state.activePage}`;
+  if (!confirm(`${pageLabel}의 모든 보스/주간 컨텐츠를 클리어 표시할까요?`)) return;
+  indices.forEach(i => {
+    const ch = state.characters[i];
+    Object.values(ch.bosses || {}).forEach(info => { info.clear = true; });
+    ch.suro = true; ch.flag = true; ch.noblesse = true;
+  });
+  saveState(); render();
+  toast('모두 클리어 처리했습니다');
+});
+document.getElementById('btn-bulk-reset').addEventListener('click', () => {
+  const indices = getVisibleCharIndices();
+  if (indices.length === 0) return;
+  const pageLabel = state.activePage === 'all' ? '전체' : `페이지 ${state.activePage}`;
+  if (!confirm(`${pageLabel}의 모든 클리어 표시를 초기화할까요?`)) return;
+  indices.forEach(i => {
+    const ch = state.characters[i];
+    Object.values(ch.bosses || {}).forEach(info => { info.clear = false; });
+    ch.suro = false; ch.flag = false; ch.noblesse = false;
+  });
+  saveState(); render();
+  toast('초기화했습니다');
+});
 document.getElementById('btn-modal-save').addEventListener('click', () => {
   if (modalCharIdx < 0) return;
   const ch = state.characters[modalCharIdx];
