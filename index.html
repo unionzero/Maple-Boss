@@ -639,13 +639,22 @@ function getNextResetDate() {
 function checkWeeklyReset() {
   const cur = getCurrentWeekKey();
   if (state.lastWeekKey !== cur) {
+    let resetCount = 0;
     state.characters.forEach(ch => {
-      Object.keys(ch.bosses || {}).forEach(bid => { ch.bosses[bid].clear = false; });
-      ch.suro = false; ch.flag = false; ch.noblesse = false;
+      Object.keys(ch.bosses || {}).forEach(bid => {
+        if (ch.bosses[bid].clear) resetCount++;
+        ch.bosses[bid].clear = false;
+      });
     });
     state.lastWeekKey = cur;
     saveState();
+    if (resetCount > 0) {
+      render();
+      toast(`주간 리셋: ${resetCount}개 클리어를 초기화했습니다`);
+    }
+    return true;
   }
+  return false;
 }
 function updateResetTimer() {
   const next = getNextResetDate();
@@ -655,7 +664,8 @@ function updateResetTimer() {
   const diffMs = next - kst;
   if (diffMs <= 0) {
     document.getElementById('reset-timer').textContent = '곧 리셋';
-    setTimeout(() => { checkWeeklyReset(); render(); }, 2000);
+    // 매주 목요일 0시 도달 — 즉시 리셋 체크 (중복 호출 안전함)
+    checkWeeklyReset();
     return;
   }
   const days = Math.floor(diffMs / (24 * 3600000));
@@ -1375,6 +1385,8 @@ checkWeeklyReset();
 render();
 updateResetTimer();
 setInterval(updateResetTimer, 1000);
+// 사이트를 장시간 열어둬도 안전하도록 매 분 리셋 체크
+setInterval(checkWeeklyReset, 60000);
 
 // ============================================================
 // Theme toggle (dark mode)
@@ -1541,6 +1553,7 @@ async function onUserLogin() {
       state = { ...state, ...data.data };
       isApplyingRemote = false;
       saveStateLocal();
+      checkWeeklyReset();  // 클라우드 데이터가 옛날 주의 것일 수도 있으니 리셋 체크
       render();
       toast('클라우드에서 데이터를 불러왔습니다');
     } else {
@@ -1576,6 +1589,7 @@ function subscribeRealtime() {
       state = { ...state, ...newData };
       isApplyingRemote = false;
       saveStateLocal();
+      checkWeeklyReset();  // 실시간 업데이트 데이터에도 주간 리셋 적용
       render();
       setSyncStatus('synced');
     })
